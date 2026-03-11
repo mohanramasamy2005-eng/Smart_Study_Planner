@@ -1,1 +1,87 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Study Planner</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Smart Study Planner</h1>
+            <p>Organize your academic journey and achieve your goals</p>
+        </header>
+
+        <main class="main-grid">
+            <section class="content-left">
+                <div class="stats-cards">
+                    <div class="card">
+                        <i class="fa-solid fa-bullseye card-icon blue"></i>
+                        <div class="card-text">
+                            <span>Total Goals</span>
+                            <h2 id="total-goals">0</h2>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-trophy card-icon green"></i>
+                        <div class="card-text">
+                            <span>Completed</span>
+                            <h2 id="completed-goals">0</h2>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <i class="fa-solid fa-fire card-icon orange"></i>
+                        <div class="card-text">
+                            <span>Current Streak</span>
+                            <h2 id="streak">0</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="progress-card">
+                    <h3>Progress</h3>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progress-bar"></div>
+                    </div>
+                    <span id="progress-percent">0%</span>
+                </div>
+
+                <div class="goals-section">
+                    <div class="goals-header">
+                        <h2>Your Study Goals</h2>
+                        <button id="add-goal-btn">+ Add Goal</button>
+                    </div>
+                    <ul class="goals-list" id="goals-list">
+                        <div class="empty-goals-view" id="empty-goals-view">
+                            <i class="fa-solid fa-book-open"></i>
+                            <p>No study goals yet</p>
+                        </div>
+                    </ul>
+                </div>
+            </section>
+
+            <aside class="content-right">
+                <div class="card tip-card">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <h4>Study Tip</h4>
+                    <p>Break large goals into smaller, manageable tasks. This makes them less overwhelming and easier to complete!</p>
+                </div>
+                <div class="card deadlines-card">
+                     <i class="fa-solid fa-calendar-days"></i>
+                     <h4>Upcoming Deadlines</h4>
+                     <p>You have no upcoming deadlines.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
