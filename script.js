@@ -1,103 +1,43 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Element References ---
-    const addGoalBtn = document.getElementById('add-goal-btn');
-    const goalsList = document.getElementById('goals-list');
-    const emptyGoalsView = document.getElementById('empty-goals-view');
-    const totalGoalsEl = document.getElementById('total-goals');
-    const completedGoalsEl = document.getElementById('completed-goals');
-    const progressBar = document.getElementById('progress-bar');
-    const progressPercent = document.getElementById('progress-percent');
-    
-    // --- State Management ---
-    // Load goals from local storage or initialize an empty array
-    let goals = JSON.parse(localStorage.getItem('studyGoals')) || [];
-
-    // --- Functions ---
-    const saveGoals = () => {
-        localStorage.setItem('studyGoals', JSON.stringify(goals));
-    };
-
-    const updateStats = () => {
-        const totalGoals = goals.length;
-        const completedGoals = goals.filter(goal => goal.completed).length;
-        const progress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
-        
-        totalGoalsEl.textContent = totalGoals;
-        completedGoalsEl.textContent = completedGoals;
-        
-        progressBar.style.width = `${progress}%`;
-        progressPercent.textContent = `${Math.round(progress)}%`;
-
-        // Toggle the "No study goals yet" message
-        if (totalGoals > 0) {
-            emptyGoalsView.style.display = 'none';
-        } else {
-            emptyGoalsView.style.display = 'block';
-        }
-    };
-
-    const renderGoals = () => {
-        // Clear the current list content except for the empty view
-        goalsList.innerHTML = ''; 
-        goalsList.appendChild(emptyGoalsView); 
-
-        goals.forEach((goal, index) => {
-            const goalItem = document.createElement('li');
-            goalItem.classList.add('goal-item');
-            if (goal.completed) {
-                goalItem.classList.add('completed');
-            }
-
-            goalItem.innerHTML = `
-                <span class="goal-text">${goal.text}</span>
-                <div class="goal-actions">
-                    <button class="complete-btn" data-index="${index}">
-                        <i class="fa-solid fa-check"></i>
-                    </button>
-                    <button class="delete-btn" data-index="${index}">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            goalsList.appendChild(goalItem);
-        });
-        
-        updateStats();
-    };
-
-    const addGoal = () => {
-        const goalText = prompt('Enter your new study goal:');
-        if (goalText && goalText.trim() !== '') {
-            goals.push({ text: goalText.trim(), completed: false });
-            saveGoals();
-            renderGoals();
-        }
-    };
-
-    const handleGoalClick = (e) => {
-        const target = e.target.closest('button');
-        if (!target) return;
-
-        const index = target.dataset.index;
-
-        if (target.classList.contains('complete-btn')) {
-            // Toggle completion status
-            goals[index].completed = !goals[index].completed;
-        }
-
-        if (target.classList.contains('delete-btn')) {
-            // Remove the goal from the array
-            goals.splice(index, 1);
-        }
-        
-        saveGoals();
-        renderGoals();
-    };
-
-    // --- Event Listeners ---
-    addGoalBtn.addEventListener('click', addGoal);
-    goalsList.addEventListener('click', handleGoalClick);
-
-    // --- Initial Render ---
-    renderGoals();
-});
+(() => {
+  'use strict';
+  const STORAGE = { tasks: 'ssp-tasks-v2', subjects: 'ssp-subjects-v2', theme: 'ssp-theme-v2' };
+  const $ = (selector) => document.querySelector(selector);
+  const els = { todayList: $('#today-task-list'), allList: $('#all-task-list'), upcoming: $('#upcoming-list'), subjects: $('#subject-grid'), search: $('#task-search'), sort: $('#task-sort'), filterGroup: $('#filter-group'), taskModal: $('#task-modal'), subjectModal: $('#subject-modal'), taskForm: $('#task-form'), subjectForm: $('#subject-form'), taskSubject: $('#task-subject') };
+  let activeFilter = 'all';
+  let tasks = load(STORAGE.tasks, []);
+  let subjects = load(STORAGE.subjects, []);
+  const localDate = (value = new Date()) => {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const today = () => localDate();
+  const id = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  function load(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
+  function save() { localStorage.setItem(STORAGE.tasks, JSON.stringify(tasks)); localStorage.setItem(STORAGE.subjects, JSON.stringify(subjects)); }
+  function seed() { if (tasks.length || subjects.length) return; subjects = ['Mathematics', 'Computer Science', 'Physics']; const d = today(), tomorrow = offsetDate(1), later = offsetDate(3); tasks = [{id:id(),title:'Practice calculus problems',subject:'Mathematics',description:'Complete the integration practice set.',date:d,time:'09:00',duration:60,priority:'High',status:'In Progress',createdAt:Date.now()-3000},{id:id(),title:'Review data structures',subject:'Computer Science',description:'Revise trees and graph traversal.',date:d,time:'15:30',duration:75,priority:'Medium',status:'Pending',createdAt:Date.now()-2000},{id:id(),title:'Finish optics notes',subject:'Physics',description:'Summarise chapter 4 concepts.',date:tomorrow,time:'10:00',duration:45,priority:'High',status:'Pending',createdAt:Date.now()-1000},{id:id(),title:'Solve mechanics quiz',subject:'Physics',description:'',date:later,time:'16:00',duration:40,priority:'Low',status:'Completed',createdAt:Date.now()}]; save(); }
+  function offsetDate(days) { const value = new Date(); value.setDate(value.getDate() + days); return localDate(value); }
+  function dateText(date) { const d = new Date(`${date}T12:00:00`); return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(d); }
+  function isComplete(task) { return task.status === 'Completed'; }
+  function isOverdue(task) { return !isComplete(task) && task.date < today(); }
+  function taskMatches(task, filter) { if (filter === 'all') return true; if (filter === 'today') return task.date === today(); if (filter === 'upcoming') return task.date > today(); if (filter === 'completed') return isComplete(task); if (filter === 'pending') return !isComplete(task); if (filter === 'high') return task.priority === 'High'; return true; }
+  function filteredTasks() { const term = els.search.value.trim().toLowerCase(); const list = tasks.filter(t => taskMatches(t, activeFilter) && (!term || `${t.title} ${t.subject}`.toLowerCase().includes(term))); const rank = {High:0,Medium:1,Low:2}; return list.sort((a,b) => { if (els.sort.value === 'priority') return rank[a.priority]-rank[b.priority] || a.date.localeCompare(b.date); if (els.sort.value === 'duration') return b.duration-a.duration; if (els.sort.value === 'recent') return b.createdAt-a.createdAt; return a.date.localeCompare(b.date) || a.time.localeCompare(b.time); }); }
+  function taskCard(task) { const complete = isComplete(task); const state = isOverdue(task) ? 'Overdue' : task.status; return `<article class="task-row ${complete?'completed':''}" data-id="${task.id}"><button class="status-toggle" data-action="toggle" type="button" aria-label="Mark ${complete?'incomplete':'complete'}">${complete?'✓':''}</button><div class="task-main"><div class="task-title">${escapeHtml(task.title)}</div>${task.description?`<p class="task-description">${escapeHtml(task.description)}</p>`:''}<div class="task-meta"><span class="tag">${escapeHtml(task.subject)}</span><span class="tag">${dateText(task.date)} · ${timeText(task.time)}</span><span class="tag">${task.duration} min</span><span class="tag priority priority-${task.priority.toLowerCase()}">${task.priority}</span><span class="tag">${state}</span></div></div><div class="task-actions"><button data-action="edit" type="button" aria-label="Edit ${escapeHtml(task.title)}">✎</button><button data-action="delete" type="button" aria-label="Delete ${escapeHtml(task.title)}">⌫</button></div></article>`; }
+  function timeText(value) { const [h,m] = value.split(':'); const date = new Date(); date.setHours(+h,+m); return new Intl.DateTimeFormat(undefined,{hour:'numeric',minute:'2-digit'}).format(date); }
+  function empty(title, copy, action) { return `<div class="empty-state"><strong>${title}</strong><p>${copy}</p>${action?'<button class="button button-secondary empty-add" type="button">Create a task</button>':''}</div>`; }
+  function renderLists() { const visible = filteredTasks(); els.allList.innerHTML = visible.length ? visible.map(taskCard).join('') : empty('No matching tasks', 'Adjust your filters or create a study task.', true); const todayTasks = tasks.filter(t => t.date === today()).sort((a,b)=>a.time.localeCompare(b.time)); els.todayList.innerHTML = todayTasks.length ? todayTasks.map(taskCard).join('') : empty('Nothing scheduled for today', 'Make space for your next focused session.', true); const soon = tasks.filter(t => isOverdue(t) || (!isComplete(t) && t.date > today())).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5); els.upcoming.innerHTML = soon.length ? soon.map(t=>`<div class="upcoming-item ${isOverdue(t)?'overdue':''}" style="--priority:${priorityColor(t.priority)}"><strong>${escapeHtml(t.title)}</strong><span>${isOverdue(t)?'Overdue':dateText(t.date)} · ${escapeHtml(t.subject)}</span></div>`).join('') : empty('All caught up', 'No upcoming work right now.'); }
+  function priorityColor(p){ return p==='High'?'var(--red)':p==='Medium'?'var(--amber)':'var(--green)'; }
+  function renderStats() { const completed=tasks.filter(isComplete), pending=tasks.length-completed.length, todayTasks=tasks.filter(t=>t.date===today()), minutes=tasks.reduce((n,t)=>n+Number(t.duration||0),0), percent=tasks.length?Math.round(completed.length/tasks.length*100):0; $('#today-count').textContent=todayTasks.length; $('#today-support').textContent=todayTasks.length?`${todayTasks.filter(isComplete).length} complete today`:'Nothing planned yet'; $('#completed-count').textContent=completed.length; $('#completed-support').textContent=tasks.length?`${percent}% of all tasks`:'Keep the momentum going'; $('#pending-count').textContent=pending; $('#pending-support').textContent=pending?'Across your study plan':'You are all caught up'; $('#hours-count').textContent=minutes>=60?`${(minutes/60).toFixed(minutes%60?1:0)}h`:`${minutes}m`; $('#hours-support').textContent='Planned study time'; $('#progress-percent').textContent=`${percent}%`; $('#progress-label').textContent=percent===100&&tasks.length?'All caught up':percent>=60?'Strong progress':'On your way'; $('#progress-support').textContent=tasks.length?`${completed.length} of ${tasks.length} tasks complete`:'Complete tasks to grow it'; $('#progress-ring').style.background=`conic-gradient(var(--primary) ${percent*3.6}deg, var(--surface-soft) 0deg)`; }
+  function renderSubjects() { els.taskSubject.innerHTML = `<option value="">Choose a subject</option>${subjects.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}`; els.subjects.innerHTML = subjects.length ? subjects.map(subject=>{ const list=tasks.filter(t=>t.subject===subject), complete=list.filter(isComplete).length, percent=list.length?Math.round(complete/list.length*100):0; return `<article class="subject-card"><h3>${escapeHtml(subject)}</h3><p>${list.length} task${list.length===1?'':'s'} · ${complete} complete</p><div class="subject-stats"><span>Progress</span><strong>${percent}%</strong></div><div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div><button class="delete-subject" data-subject="${escapeHtml(subject)}" type="button">Remove subject</button></article>`; }).join('') : empty('No subjects yet', 'Add a subject to organize your study plan.'); }
+  function render() { renderStats(); renderLists(); renderSubjects(); }
+  function escapeHtml(value) { const div=document.createElement('div'); div.textContent=value; return div.innerHTML; }
+  function openModal(modal) { modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); setTimeout(()=>modal.querySelector('input:not([type=hidden]), select')?.focus(),20); }
+  function closeModal(modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+  function openTask(task) { els.taskForm.reset(); $('#task-form-error').textContent=''; $('#task-id').value=task?.id||''; $('#task-modal-title').textContent=task?'Edit task':'Create a task'; $('#save-task').textContent=task?'Save changes':'Save task'; $('#task-date').value=task?.date||today(); $('#task-time').value=task?.time||'09:00'; if(task){ $('#task-title').value=task.title; $('#task-subject').value=task.subject; $('#task-description').value=task.description||''; $('#task-duration').value=task.duration; $('#task-priority').value=task.priority; $('#task-status').value=task.status; } openModal(els.taskModal); }
+  function toast(message, error=false) { const item=document.createElement('div'); item.className=`toast${error?' error':''}`; item.textContent=message; $('#toast-region').append(item); setTimeout(()=>item.remove(),3200); }
+  function handleTaskAction(event) { const button=event.target.closest('button[data-action]'); if(!button)return; const row=button.closest('.task-row'), task=tasks.find(t=>t.id===row?.dataset.id); if(!task)return; const action=button.dataset.action; if(action==='toggle'){task.status=isComplete(task)?'Pending':'Completed';save();render();toast(isComplete(task)?'Task completed':'Task marked incomplete');} if(action==='edit')openTask(task); if(action==='delete'){tasks=tasks.filter(t=>t.id!==task.id);save();render();toast('Task deleted');} }
+  function setupEvents() { ['#open-task-modal','#welcome-add-task','#open-task-modal-2'].forEach(s=>$(s).addEventListener('click',()=>openTask())); $('#open-subject-modal').addEventListener('click',()=>{els.subjectForm.reset();$('#subject-form-error').textContent='';openModal(els.subjectModal);}); document.addEventListener('click',e=>{if(e.target.closest('.close-modal')||e.target===els.taskModal)closeModal(els.taskModal); if(e.target.closest('.close-subject-modal')||e.target===els.subjectModal)closeModal(els.subjectModal); if(e.target.closest('.empty-add'))openTask();}); document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal(els.taskModal);closeModal(els.subjectModal);}}); [els.allList,els.todayList].forEach(el=>el.addEventListener('click',handleTaskAction)); els.search.addEventListener('input',renderLists); els.sort.addEventListener('change',renderLists); els.filterGroup.addEventListener('click',e=>{const button=e.target.closest('.filter');if(!button)return;activeFilter=button.dataset.filter;els.filterGroup.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b===button));renderLists();}); $('#show-today').addEventListener('click',()=>{activeFilter='today';els.filterGroup.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter==='today'));renderLists();document.querySelector('.all-tasks').scrollIntoView({behavior:'smooth'});}); els.taskForm.addEventListener('submit',e=>{e.preventDefault();const data=Object.fromEntries(new FormData(els.taskForm));const error=$('#task-form-error');if(!data.title.trim()||!data.subject||!data.date||!data.time||!data.duration){error.textContent='Please complete all required fields.';return;}const record={id:data['task-id']||id(),title:data.title.trim(),subject:data.subject,description:data.description.trim(),date:data.date,time:data.time,duration:Number(data.duration),priority:data.priority,status:data.status,createdAt:Number(data['task-id']?tasks.find(t=>t.id===data['task-id'])?.createdAt:Date.now())};const existing=tasks.findIndex(t=>t.id===record.id);if(existing>=0)tasks[existing]=record;else tasks.unshift(record);save();render();closeModal(els.taskModal);toast(existing>=0?'Task updated successfully':'Task added successfully');}); els.subjectForm.addEventListener('submit',e=>{e.preventDefault();const name=$('#subject-name').value.trim(),error=$('#subject-form-error');if(!name){error.textContent='Enter a subject name.';return;}if(subjects.some(s=>s.toLowerCase()===name.toLowerCase())){error.textContent='That subject already exists.';return;}subjects.push(name);save();render();closeModal(els.subjectModal);toast('Subject added successfully');}); els.subjects.addEventListener('click',e=>{const button=e.target.closest('.delete-subject');if(!button)return;const subject=button.dataset.subject,used=tasks.some(t=>t.subject===subject);if(used){toast('Remove or reassign this subject’s tasks first.',true);return;}subjects=subjects.filter(s=>s!==subject);save();render();toast('Subject deleted');}); $('#theme-toggle').addEventListener('click',()=>{const dark=document.documentElement.dataset.theme!=='dark';document.documentElement.dataset.theme=dark?'dark':'';localStorage.setItem(STORAGE.theme,dark?'dark':'light');$('#theme-toggle').textContent=dark?'☀':'☾';}); }
+  function initialize(){seed();const dark=localStorage.getItem(STORAGE.theme)==='dark';if(dark){document.documentElement.dataset.theme='dark';$('#theme-toggle').textContent='☀';}const now=new Date();$('#header-date').textContent=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(now);$('#today-label').textContent=`${new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric'}).format(now).toUpperCase()}`;setupEvents();render();}
+  initialize();
+})();

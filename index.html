@@ -1,87 +1,57 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Study Planner</title>
-    <link rel="stylesheet" href="stylesheet.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A focused, browser-based study planning dashboard.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E">
+  <title>Smart Study Planner</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header class="topbar">
+    <a class="brand" href="#dashboard" aria-label="Smart Study Planner home"><span class="brand-mark">S</span><span>Smart Study Planner<small>Plan with purpose</small></span></a>
+    <nav class="nav-links" aria-label="Main navigation"><a href="#dashboard">Overview</a><a href="#plan">Study plan</a><a href="#subjects">Subjects</a></nav>
+    <div class="topbar-actions"><span class="header-date" id="header-date"></span><button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle colour theme">☾</button><button class="button button-primary button-compact" id="open-task-modal" type="button">+ New task</button></div>
+  </header>
 
-    <div class="container">
-        <header>
-            <h1>Smart Study Planner</h1>
-            <p>Organize your academic journey and achieve your goals</p>
-        </header>
+  <main class="page-shell" id="dashboard">
+    <section class="welcome" aria-labelledby="welcome-title">
+      <div><p class="eyebrow" id="today-label">YOUR STUDY SPACE</p><h1 id="welcome-title">Good morning, Student <span aria-hidden="true">👋</span></h1><p>Plan your study. Track your progress. Achieve your goals.</p></div>
+      <button class="button button-primary" id="welcome-add-task" type="button">Create study task <span aria-hidden="true">→</span></button>
+    </section>
 
-        <main class="main-grid">
-            <section class="content-left">
-                <div class="stats-cards">
-                    <div class="card">
-                        <i class="fa-solid fa-bullseye card-icon blue"></i>
-                        <div class="card-text">
-                            <span>Total Goals</span>
-                            <h2 id="total-goals">0</h2>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <i class="fa-solid fa-trophy card-icon green"></i>
-                        <div class="card-text">
-                            <span>Completed</span>
-                            <h2 id="completed-goals">0</h2>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <i class="fa-solid fa-fire card-icon orange"></i>
-                        <div class="card-text">
-                            <span>Current Streak</span>
-                            <h2 id="streak">0</h2>
-                        </div>
-                    </div>
-                </div>
+    <section class="summary-grid" aria-label="Study summary">
+      <article class="summary-card"><div class="summary-icon blue">☀</div><div><p>Today's tasks</p><strong id="today-count">0</strong><small id="today-support">Nothing planned yet</small></div></article>
+      <article class="summary-card"><div class="summary-icon green">✓</div><div><p>Completed tasks</p><strong id="completed-count">0</strong><small id="completed-support">Keep the momentum going</small></div></article>
+      <article class="summary-card"><div class="summary-icon amber">◷</div><div><p>Pending tasks</p><strong id="pending-count">0</strong><small id="pending-support">Across your study plan</small></div></article>
+      <article class="summary-card"><div class="summary-icon violet">◒</div><div><p>Study hours</p><strong id="hours-count">0h</strong><small id="hours-support">Planned study time</small></div></article>
+      <article class="summary-card progress-summary"><div class="ring" id="progress-ring"><span id="progress-percent">0%</span></div><div><p>Overall progress</p><strong id="progress-label">On your way</strong><small id="progress-support">Complete tasks to grow it</small></div></article>
+    </section>
 
-                <div class="progress-card">
-                    <h3>Progress</h3>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="progress-bar"></div>
-                    </div>
-                    <span id="progress-percent">0%</span>
-                </div>
-
-                <div class="goals-section">
-                    <div class="goals-header">
-                        <h2>Your Study Goals</h2>
-                        <button id="add-goal-btn">+ Add Goal</button>
-                    </div>
-                    <ul class="goals-list" id="goals-list">
-                        <div class="empty-goals-view" id="empty-goals-view">
-                            <i class="fa-solid fa-book-open"></i>
-                            <p>No study goals yet</p>
-                        </div>
-                    </ul>
-                </div>
-            </section>
-
-            <aside class="content-right">
-                <div class="card tip-card">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    <h4>Study Tip</h4>
-                    <p>Break large goals into smaller, manageable tasks. This makes them less overwhelming and easier to complete!</p>
-                </div>
-                <div class="card deadlines-card">
-                     <i class="fa-solid fa-calendar-days"></i>
-                     <h4>Upcoming Deadlines</h4>
-                     <p>You have no upcoming deadlines.</p>
-                </div>
-            </aside>
-        </main>
+    <div class="dashboard-grid">
+      <section class="panel study-plan" id="plan" aria-labelledby="plan-title">
+        <div class="panel-heading"><div><p class="eyebrow">FOCUS FOR TODAY</p><h2 id="plan-title">Today's Study Plan</h2></div><button class="text-button" id="show-today" type="button">View today</button></div>
+        <div class="task-list" id="today-task-list"></div>
+      </section>
+      <aside class="side-stack">
+        <section class="panel upcoming-panel" aria-labelledby="upcoming-title"><div class="panel-heading"><div><p class="eyebrow">ON THE HORIZON</p><h2 id="upcoming-title">Upcoming tasks</h2></div></div><div id="upcoming-list" class="compact-list"></div></section>
+        <section class="study-tip"><span aria-hidden="true">✦</span><div><h2>Study smarter</h2><p>Try a focused 45-minute session, then take a short, screen-free break.</p></div></section>
+      </aside>
     </div>
 
-    <script src="script.js"></script>
+    <section class="panel all-tasks" aria-labelledby="tasks-title">
+      <div class="panel-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h2 id="tasks-title">All study tasks</h2></div><button class="button button-secondary" id="open-task-modal-2" type="button">+ Add task</button></div>
+      <div class="task-tools"><label class="search-field"><span aria-hidden="true">⌕</span><input id="task-search" type="search" placeholder="Search by task or subject"></label><div class="filter-group" id="filter-group" aria-label="Task filters"><button class="filter active" data-filter="all" type="button">All</button><button class="filter" data-filter="today" type="button">Today</button><button class="filter" data-filter="upcoming" type="button">Upcoming</button><button class="filter" data-filter="completed" type="button">Completed</button><button class="filter" data-filter="pending" type="button">Pending</button><button class="filter" data-filter="high" type="button">High priority</button></div><label class="sort-field">Sort <select id="task-sort" aria-label="Sort tasks"><option value="date">Date</option><option value="priority">Priority</option><option value="duration">Duration</option><option value="recent">Recently added</option></select></label></div>
+      <div class="task-list" id="all-task-list"></div>
+    </section>
+
+    <section class="subjects-section" id="subjects" aria-labelledby="subjects-title"><div class="section-heading"><div><p class="eyebrow">STUDY AREAS</p><h2 id="subjects-title">Subjects</h2><p>See how each course is progressing.</p></div><button class="button button-secondary" id="open-subject-modal" type="button">+ Add subject</button></div><div class="subject-grid" id="subject-grid"></div></section>
+  </main>
+
+  <div class="modal" id="task-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="task-modal-title"><div class="modal-card"><div class="modal-heading"><div><p class="eyebrow">STUDY SESSION</p><h2 id="task-modal-title">Create a task</h2></div><button class="icon-button close-modal" type="button" aria-label="Close task form">×</button></div><form id="task-form" novalidate><input id="task-id" type="hidden"><div class="form-grid"><label>Task title<input id="task-title" name="title" required maxlength="100" placeholder="e.g. Review lecture notes"></label><label>Subject<select id="task-subject" name="subject" required></select></label><label>Date<input id="task-date" name="date" type="date" required></label><label>Time<input id="task-time" name="time" type="time" required></label><label>Duration (minutes)<input id="task-duration" name="duration" type="number" min="5" max="720" step="5" required placeholder="60"></label><label>Priority<select id="task-priority" name="priority"><option>Medium</option><option>High</option><option>Low</option></select></label><label>Status<select id="task-status" name="status"><option>Pending</option><option>In Progress</option><option>Completed</option></select></label><label class="form-full">Description <textarea id="task-description" name="description" maxlength="240" placeholder="Add a helpful note or objective (optional)"></textarea></label></div><p class="form-error" id="task-form-error" role="alert"></p><div class="modal-actions"><button class="button button-ghost close-modal" type="button">Cancel</button><button class="button button-primary" id="save-task" type="submit">Save task</button></div></form></div></div>
+  <div class="modal" id="subject-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="subject-modal-title"><div class="modal-card modal-small"><div class="modal-heading"><div><p class="eyebrow">ORGANIZE</p><h2 id="subject-modal-title">Add a subject</h2></div><button class="icon-button close-subject-modal" type="button" aria-label="Close subject form">×</button></div><form id="subject-form" novalidate><label>Subject name<input id="subject-name" required maxlength="40" placeholder="e.g. Computer Science"></label><p class="form-error" id="subject-form-error" role="alert"></p><div class="modal-actions"><button class="button button-ghost close-subject-modal" type="button">Cancel</button><button class="button button-primary" type="submit">Add subject</button></div></form></div></div>
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script src="script.js"></script>
 </body>
 </html>
